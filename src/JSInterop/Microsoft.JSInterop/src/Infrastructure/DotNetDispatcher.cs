@@ -31,6 +31,8 @@ public static class DotNetDispatcher
 
     private static readonly ConcurrentDictionary<Type, Func<object, Task>> _cachedConvertToTaskByType = new();
 
+    private static readonly MethodInfo _taskConverterMethodInfo = typeof(DotNetDispatcher).GetMethod(nameof(CreateValueTaskConverter), BindingFlags.NonPublic | BindingFlags.Static)!;
+
     /// <summary>
     /// Receives a call from JS to .NET, locating and invoking the specified method.
     /// </summary>
@@ -375,7 +377,7 @@ public static class DotNetDispatcher
 
         return converterDelegate.Invoke(obj);
     }
-    private static readonly MethodInfo _taskConverterMethodInfo = typeof(DotNetDispatcher).GetMethod(nameof(CreateValueTaskConverter), BindingFlags.NonPublic | BindingFlags.Static)!;
+
     private static Task CreateValueTaskConverter<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] T>(object result) => ((ValueTask<T>)result).AsTask();
     
     private static (MethodInfo methodInfo, Type[] parameterTypes) GetCachedMethodInfo(IDotNetObjectReference objectReference, string methodIdentifier)
